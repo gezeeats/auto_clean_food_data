@@ -1,6 +1,6 @@
 import { db } from "../firebaseConfig.js";
 import admin from "firebase-admin"; // for FieldValue
-import { CollectionName } from "../key words/collection_name.js";
+import { CollectionName } from "../key_words/collection_name.js";
 
 
 /**

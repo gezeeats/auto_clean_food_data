@@ -1,6 +1,6 @@
 
 
-import { FirebaseFoodIdResIdMethods } from "../firebase methods/firebase_food_id_res_id_methods.js";
+import { FirebaseFoodIdResIdMethods } from "../firebase_methods/firebase_food_id_res_id_methods.js";
 import { FoodIdResIdModel } from "../models/food_id_res_id_model.js";
 
 export class FoodIdResIdServiceMethod {

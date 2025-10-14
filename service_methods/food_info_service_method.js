@@ -1,6 +1,6 @@
-import { FirebaseFoodInfoMethods } from "../firebase methods/firebase_food_info_methods.js";
+import { FirebaseFoodInfoMethods } from "../firebase_methods/firebase_food_info_methods.js";
 import { FoodInfoCalculatedServiceMethod } from "./food_info_calculated_service_method.js";
-import { CollectionName } from "../key words/collection_name.js";
+import { CollectionName } from "../key_words/collection_name.js";
 import {
   countFoodSales,
   countFoodFavoriteOrCartOccurrences,

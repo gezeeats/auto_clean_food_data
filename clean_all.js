@@ -1,5 +1,5 @@
-import { FoodInfoServiceMethod } from "./service methods/food_info_service_method.js";
-import { FoodIdResIdServiceMethod } from "./service methods/food_id_res_id_service_method.js";
+import { FoodInfoServiceMethod } from "./service_methods/food_info_service_method.js";
+import { FoodIdResIdServiceMethod } from "./service_methods/food_id_res_id_service_method.js";
 
 const foodInfoService = new FoodInfoServiceMethod();
 const foodIdResIdService = new FoodIdResIdServiceMethod();

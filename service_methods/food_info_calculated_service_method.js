@@ -1,6 +1,6 @@
 // service_methods/food_info_calculated_service_method.js
 
-import { FirebaseFoodInfoCalculatedMethods } from "../firebase methods/firebase_food_info_calculated_methods.js";
+import { FirebaseFoodInfoCalculatedMethods } from "../firebase_methods/firebase_food_info_calculated_methods.js";
 import { FoodIdResIdServiceMethod } from "./food_id_res_id_service_method.js";
 import { FoodInfoCalculatedModel } from "../models/food_info_calculated_model.js";
 
