@@ -6,22 +6,30 @@ import { FoodInfoCalculatedModel } from "../models/food_info_calculated_model.js
 
 export class FoodInfoCalculatedServiceMethod {
   // 🔹 Sum complete calculated restaurant info
-  sumcompletcalculatedRes(infos) {
-    if (!infos || infos.length === 0) return "";
+sumcompletcalculatedRes(infos) {
+  // 1️⃣ Handle empty or invalid input
+  if (!infos || infos.length === 0) return "";
 
-    const first = infos[0].split(",");
-    const resID = first[0];
-    const totals = new Array(first.length - 1).fill(0);
+  // 2️⃣ Extract restaurant ID (resID) and initialize totals
+  const first = infos[0].split(",");
+  const resID = first[0];
+  const totals = new Array(first.length).fill(0);
 
-    for (const info of infos) {
-      const parts = info.split(",");
-      for (let i = 1; i < parts.length; i++) {
-        totals[i - 1] += parseFloat(parts[i]) || 0;
+  // 3️⃣ Sum up all numeric values
+  for (const info of infos) {
+    const parts = info.split(",");
+    for (let i = 0; i < parts.length; i++) {
+      const val = parseFloat(parts[i]);
+      if (!isNaN(val) && isFinite(val)) {
+        totals[i] += val;
       }
     }
-
-    return `${resID},${totals.map((e) => e.toFixed(0)).join(",")}`;
   }
+
+  // 4️⃣ Convert to string, keeping same formatting as Dart version
+  return totals.map((e) => e.toFixed(0)).join(",");
+}
+
 
   // 🔹 Sum specific restaurant fields
   sumSelectedFieldsRes(x, newData, { type }) {
@@ -50,7 +58,7 @@ export class FoodInfoCalculatedServiceMethod {
         break;
     }
 
-    return `${resID},${data.unsubscribedview},${data.subscribedview},${data.fav}`;
+    return `${data.unsubscribedview},${data.subscribedview},${data.fav}`;
   }
 
   // 🔹 Sum specific food fields
@@ -202,6 +210,7 @@ export class FoodInfoCalculatedServiceMethod {
         restaurantIdentification
       );
 
+
       if (
         restaurantCalculated.restaurantIdentification &&
         restaurantCalculated.restaurantIdentification.includes("Error")
@@ -213,11 +222,18 @@ export class FoodInfoCalculatedServiceMethod {
         });
         return await firebaseMethods.addRestaurant(newRestaurant);
       } else {
-        const combinedString = this.sumcompletcalculatedFood([
-          restaurantCalculated.restaurantInfoCalculated,
-          resCalculatedStringNewComplete,
-        ]);
+      let oldInfo = restaurantCalculated.restaurantInfoCalculated || "";
 
+      // Clean up NaN values safely
+      if (oldInfo.includes("NaN")) {
+        oldInfo = this.cleanNaNValues(oldInfo);
+      }
+
+      // Combine the two result strings
+      const combinedString = this.sumcompletcalculatedFood([
+        oldInfo,
+        resCalculatedStringNewComplete,
+      ]);
         return await firebaseMethods.updateRestaurantInfoCalculated(
           restaurantIdentification,
           combinedString
@@ -227,4 +243,19 @@ export class FoodInfoCalculatedServiceMethod {
       return `Error: ${e.message}`;
     }
   }
+  cleanNaNValues(info) {
+  if (!info || typeof info !== "string") return "";
+
+  const parts = info.split(",");
+
+  // Keep the ID (first value), replace invalid numbers with "0"
+  const cleaned = parts.map((val, i) => {
+    if (i === 0) return val; // keep the ID untouched
+    const num = parseFloat(val);
+    return !isNaN(num) && isFinite(num) ? val : "0";
+  });
+
+  return cleaned.join(",");
+}
+
 }
