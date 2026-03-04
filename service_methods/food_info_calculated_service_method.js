@@ -118,6 +118,8 @@ sumcompletcalculatedRes(infos) {
 
   // 🔹 Sum all food info
   sumcompletcalculatedFood(infos) {
+           
+   
     if (!infos || infos.length === 0) return "";
 
     const first = infos[0].split(",");
@@ -133,6 +135,25 @@ sumcompletcalculatedRes(infos) {
 
     return `${foodID},${totals.map((e) => e.toFixed(0)).join(",")}`;
   }
+   sumAllNumbers(infos) {
+  if (!infos || infos.length === 0) return "";
+
+  // Determine the length of numbers in the first entry
+  const firstLength = infos[0].split(",").length;
+  const totals = new Array(firstLength).fill(0);
+
+  for (const info of infos) {
+    const parts = info.split(",");
+    for (let i = 0; i < firstLength; i++) {
+      const num = parseFloat(parts[i]);
+      totals[i] += isNaN(num) ? 0 : num;
+    }
+  }
+
+  return totals.join(",");
+}
+
+  
 
   // 🔹 Update food info in Firestore
   async updateFoodInfo(foodCalculatedStringNew, foodIdResId, type) {
@@ -206,9 +227,12 @@ sumcompletcalculatedRes(infos) {
         { type }
       );
 
+
       const restaurantCalculated = await firebaseMethods.getRestaurant(
         restaurantIdentification
       );
+
+
 
 
       if (
@@ -230,10 +254,11 @@ sumcompletcalculatedRes(infos) {
       }
 
       // Combine the two result strings
-      const combinedString = this.sumcompletcalculatedFood([
+      const combinedString = this.sumAllNumbers([
         oldInfo,
         resCalculatedStringNewComplete,
       ]);
+    
         return await firebaseMethods.updateRestaurantInfoCalculated(
           restaurantIdentification,
           combinedString

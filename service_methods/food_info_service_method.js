@@ -135,12 +135,17 @@ export class FoodInfoServiceMethod {
   }
 
   async cleanResViewData(foodInfoDataTemp, minGapForCounting = 5) {
+     
     try {
       const results = countFoodOccurrencesWithTimeCondition(
         foodInfoDataTemp.restaurantViewData,
         minGapForCounting
+
       );
+   
+
       for (const result of results) {
+
         await this.calculatedService.updateResInfo(result, CollectionName.typeResView);
       }
       await this.firebaseMethods.clearResViewData();
@@ -153,6 +158,8 @@ export class FoodInfoServiceMethod {
 
   async cleanAllData(foodInfoDataTemp, foodIdResId, minGapForCounting = 5) {
     try {
+   
+
       await this.cleanFoodCartData(foodInfoDataTemp, foodIdResId);
       await this.cleanFoodViewData(foodInfoDataTemp, foodIdResId, minGapForCounting);
       await this.cleanFoodSaleData(foodInfoDataTemp, foodIdResId);
