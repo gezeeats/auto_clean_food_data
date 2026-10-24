@@ -10,17 +10,14 @@
 // // Export Firestore instance
 // export const db = admin.firestore();
 
-
 import admin from "firebase-admin";
 
 const serviceAccount = JSON.parse(
   process.env.FIREBASE_SERVICE_ACCOUNT
 );
 
-// Initialize Firebase Admin SDK
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-// Export Firestore instance
 export const db = admin.firestore();

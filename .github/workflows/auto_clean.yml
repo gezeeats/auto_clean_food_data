@@ -1,8 +1,9 @@
+
 name: Auto Clean Firebase Data
 
 on:
   schedule:
-    - cron: "*/10 * * * *"  # runs every 10 minutes
+    - cron: "0 */3 * * *"  # runs every 3 hours
   workflow_dispatch:  # allow manual trigger
 
 jobs:
@@ -21,11 +22,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Write Firebase credentials from secret
-        run: |
-          echo "$FIREBASE_SERVICE_ACCOUNT" > gezeeats-firebase-adminsdk-8o1wv-d1cc221d22.json
+      - name: Run Cleaner
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-
-      - name: Run Cleaner
         run: node clean_all.js
