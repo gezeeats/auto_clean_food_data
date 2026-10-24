@@ -1,26 +1,53 @@
-import { FoodInfoServiceMethod } from "../service methods/food_info_calculated_service_method.js";
-import { FoodIdResIdServiceMethod } from "../service methods/food_id_res_id_service_method.js";
+
+import { FoodInfoServiceMethod } from "../service_methods/food_info_service_method.js";
+import { FoodInfoCalculatedServiceMethod } from "../service_methods/food_info_calculated_service_method.js";
+import { CombinedAppServiceMethods } from "../service_methods/combined/combined_service_methods.js";
+import { CollectionName } from "../key_words/collection_name.js";
 
 const foodInfoService = new FoodInfoServiceMethod();
-const foodIdResIdService = new FoodIdResIdServiceMethod();
+const foodInfoCalculatedService = new FoodInfoCalculatedServiceMethod();
+const combinedAppServiceMethods = new CombinedAppServiceMethods();
 
 async function runCleaner() {
+  console.log("\n========================================");
+  console.log("🚀 Starting automatic data cleaning...");
+  console.log("========================================\n");
+
   try {
-    console.log("🔹 Starting automatic data cleaning...");
+    console.log("📥 Fetching FoodInfo data...");
 
     const foodInfoTemp = await foodInfoService.getFoodInfoTempDetail();
-    console.log("✅ FoodInfoTemp retrieved");
 
-    const foodIdResId = await foodIdResIdService.getFoodIdResIdDetail();
-    console.log("✅ FoodIdResId retrieved");
+    console.log("✅ FoodInfo data retrieved successfully.");
+    console.log("📊 FoodInfo data:", foodInfoTemp);
 
-    const result = await foodInfoService.cleanAllData(foodInfoTemp, foodIdResId);
-    console.log("✅ cleanAllData result:", result);
+    console.log("\n📥 Fetching CombinedApp data...");
 
-    console.log("🎉 Scheduled data cleaning completed successfully!");
+    const combinedAppData = await combinedAppServiceMethods.read(
+      CollectionName.user,
+    );
+
+    console.log("✅ CombinedApp data retrieved successfully.");
+    // console.log("⚙️ CombinedApp data:", combinedAppData);
+
+    console.log("\n🧹 Starting cleanAllData()...");
+
+    const result = await foodInfoCalculatedService.cleanAllData(
+      foodInfoTemp,combinedAppData
+    );
+
+    console.log("\n📋 Cleaning result:", result);
+
+    console.log("\n========================================");
+    console.log("🎉 Automatic data cleaning finished.");
+    console.log("========================================\n");
   } catch (err) {
-    console.error("❌ Scheduled task failed:", err);
-    process.exit(1);
+    console.error("\n❌ Automatic data cleaning failed!");
+    console.error("📌 Error:", err);
+    console.error("📌 Message:", err?.message);
+    console.error("📌 Stack:", err?.stack);
+
+    process.exitCode = 1;
   }
 }
 

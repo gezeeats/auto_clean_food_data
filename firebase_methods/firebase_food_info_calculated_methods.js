@@ -1,212 +1,254 @@
+
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { db } from "../firebaseConfig.js";
-import admin from "firebase-admin"; // for FieldValue
+import { FoodInfoCalculatedModel } from "../models/food_info_calculated_model.js";
 import { CollectionName } from "../key_words/collection_name.js";
+import { StringConstants } from "../utils/string_constant.js";
+
+
+function getRestaurantPath(firestore, restaurantId) {
+  return firestore
+    .collection(CollectionName.foodInfo)
+    .doc(CollectionName.foodInfoCalculated)
+    .collection(CollectionName.restaurants)
+    .doc(restaurantId);
+}
+
+function makeErrorModel(message) {
+  return new FoodInfoCalculatedModel({
+    restaurantIdentification: `Error: ${message}`,
+    restaurantInfoCalculated: "",
+    menuCalculated: [""],
+  });
+}
 
 export class FirebaseFoodInfoCalculatedMethods {
-  // Add restaurant
+  // constructor(databaseConfigData) {
+    //   this.isMainDB = true;
+  constructor() {
+    this._db = db;}
+
+  //   // try {
+  //   //   const documentLocation =
+  //   //     databaseConfigData?.foodInfoCalculated ?? "";
+
+  //   //   if (documentLocation !== "") {
+  //   //     this._db = getFirestore(undefined, documentLocation);
+  //   //     this.isMainDB = false;
+  //   //   }
+  //   // } catch (error) {
+  //   //   console.error("Firestore database selection failed:", error);
+  //   //   this._db = db;
+  //   //   this.isMainDB = true;
+  //   // }
+  // }
+
+  // Write to the configured database and mirror to the default database
+  // when the configured database is not the main database.
   async addRestaurant(foodInfoCalculated) {
-    let res = "Some error has occured";
     try {
-      await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfoCalculated)
-        .collection(CollectionName.restaurants)
-        .doc(foodInfoCalculated.restaurantIdentification)
-        .set({
-          menuCalculated: foodInfoCalculated.menuCalculated,
-          restaurantIdentification: foodInfoCalculated.restaurantIdentification,
-          restaurantInfoCalculated: foodInfoCalculated.restaurantInfoCalculated,
-        });
-      res = "success";
-    } catch (err) {
-      res = err.toString();
-    }
-    return res;
-  }
-
-  // Delete restaurant
-  async deleteRestaurant(restaurantIdentification) {
-    let res = "Some error has occured";
-    try {
-      await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfoCalculated)
-        .collection(CollectionName.restaurants)
-        .doc(restaurantIdentification)
-        .delete();
-      res = "success";
-    } catch (err) {
-      res = err.toString();
-    }
-    return res;
-  }
-
-  // Update restaurant
-  async updateRestaurant(foodInfoCalculated) {
-    let res = "Some error has occured";
-    try {
-      await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfoCalculated)
-        .collection(CollectionName.restaurants)
-        .doc(foodInfoCalculated.restaurantIdentification)
-        .update({
-          menuCalculated: foodInfoCalculated.menuCalculated,
-          restaurantIdentification: foodInfoCalculated.restaurantIdentification,
-          restaurantInfoCalculated: foodInfoCalculated.restaurantInfoCalculated,
-        });
-      res = "success";
-    } catch (err) {
-      res = err.toString();
-    }
-    return res;
-  }
-
-  // Update restaurant info only
-  async updateRestaurantInfoCalculated(restaurantIdentification, restaurantInfoCalculated) {
-    let res = "Some error has occurred";
-    try {
-      await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfoCalculated)
-        .collection(CollectionName.restaurants)
-        .doc(restaurantIdentification)
-        .update({
-          restaurantInfoCalculated: restaurantInfoCalculated,
-        });
-      res = "success";
-    } catch (err) {
-      res = err.toString();
-    }
-    return res;
-  }
-
-  // Get restaurant by ID
-  async getRestaurant(restaurantIdentification) {
-    try {
-      const snapshot = await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfoCalculated)
-        .collection(CollectionName.restaurants)
-        .doc(restaurantIdentification)
-        .get();
-
-      if (snapshot.exists && snapshot.data()) {
-        return snapshot.data();
-      } else {
-        return {
-          restaurantIdentification: "Error: Restaurant not found",
-          menuCalculated: [""],
-          restaurantInfoCalculated: "",
-        };
-      }
-    } catch (e) {
-      return {
-        restaurantIdentification: `Error: ${e.toString()}`,
-        menuCalculated: [""],
-        restaurantInfoCalculated: "",
+      const data = {
+        menuCalculated: foodInfoCalculated.menuCalculated,
+        restaurantIdentification:
+          foodInfoCalculated.restaurantIdentification,
+        restaurantInfoCalculated:
+          foodInfoCalculated.restaurantInfoCalculated,
       };
+
+      await getRestaurantPath(
+        this._db,
+        foodInfoCalculated.restaurantIdentification,
+      ).set(data);
+
+      return StringConstants.success;
+    } catch (error) {
+      return String(error);
     }
   }
 
-  // Get all restaurants
-  async getAllRestaurants() {
+  async deleteRestaurant(restaurantIdentification) {
     try {
-      const snapshot = await db
+      await getRestaurantPath(
+        this._db,
+        restaurantIdentification,
+      ).delete();
+      return StringConstants.success;
+    } catch (error) {
+      return String(error);
+    }
+  }
+
+  async updateRestaurant(foodInfoCalculated) {
+    try {
+      const data = {
+        menuCalculated: foodInfoCalculated.menuCalculated,
+        restaurantIdentification:
+          foodInfoCalculated.restaurantIdentification,
+        restaurantInfoCalculated:
+          foodInfoCalculated.restaurantInfoCalculated,
+      };
+
+      await getRestaurantPath(
+        this._db,
+        foodInfoCalculated.restaurantIdentification,
+      ).update(data);
+      return StringConstants.success;
+    } catch (error) {
+      return String(error);
+    }
+  }
+
+  async updateRestaurantInfoCalculated(
+    restaurantIdentification,
+    restaurantInfoCalculated,
+  ) {
+    try {
+      const data = { restaurantInfoCalculated };
+
+      await getRestaurantPath(
+        this._db,
+        restaurantIdentification,
+      ).update(data);
+      return StringConstants.success;
+    } catch (error) {
+      return String(error);
+    }
+  }
+
+  async getRestaurant(restaurantId, combinedAppData) {
+    try {
+      console.log(`📡 Firestore fetch: ${restaurantId}`);
+      const snapshot = await getRestaurantPath(
+        this._db,
+        restaurantId,
+      ).get();
+
+      if (!snapshot.exists || snapshot.data() == null) {
+        return new FoodInfoCalculatedModel({
+          restaurantIdentification: "Error: Not Found",
+          menuCalculated: [""],
+          restaurantInfoCalculated: "",
+        });
+      }
+
+      const data = snapshot.data();
+      const model = FoodInfoCalculatedModel.fromMap(data);
+      return model;
+    } catch (error) {
+      return makeErrorModel(error.message ?? String(error));
+    }
+  }
+
+  async getRestaurantRealTime(restaurantId, combinedAppData) {
+    try {
+      const snapshot = await getRestaurantPath(
+        this._db,
+        restaurantId,
+      ).get();
+
+
+      if (!snapshot.exists || snapshot.data() == null) {
+        return new FoodInfoCalculatedModel({
+          restaurantIdentification: StringConstants.thisDataNotFound,
+          menuCalculated: [""],
+          restaurantInfoCalculated: "",
+        });
+      }
+      const model = FoodInfoCalculatedModel.fromMap(snapshot.data());
+      return model;
+    } catch (error) {
+      return makeErrorModel(error.message ?? String(error));
+    }
+  }
+
+  async getAllRestaurants(appData) {
+    try {
+      console.log("📡 Firestore list fetch");
+      const snapshot = await this._db
         .collection(CollectionName.foodInfo)
         .doc(CollectionName.foodInfoCalculated)
         .collection(CollectionName.restaurants)
         .get();
-
-      return snapshot.docs.map((doc) => doc.data());
-    } catch (e) {
-      return [
-        {
-          restaurantIdentification: `Error: ${e.toString()}`,
-          menuCalculated: [""],
-          restaurantInfoCalculated: "",
-        },
-      ];
+      const list = snapshot.docs.map((doc) =>
+        FoodInfoCalculatedModel.fromMap(doc.data()),
+      );
+      return list;
+    } catch (error) {
+      return [makeErrorModel(error.message ?? String(error))];
     }
   }
 
-  // Add menu item
   async addMenuItem(restaurantId, menuItem) {
     try {
-      await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfoCalculated)
-        .collection(CollectionName.restaurants)
-        .doc(restaurantId)
-        .update({
-          menuCalculated: admin.firestore.FieldValue.arrayUnion(menuItem),
-        });
-      return "success";
-    } catch (e) {
-      return `Error: ${e.toString()}`;
+      await getRestaurantPath(this._db, restaurantId).update({
+        menuCalculated: FieldValue.arrayUnion(menuItem),
+      });
+
+      return StringConstants.success;
+    } catch (error) {
+      return `Error: ${error}`;
     }
   }
 
-  // Remove menu item
   async removeMenuItem(restaurantId, menuItem) {
     try {
-      await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfoCalculated)
-        .collection(CollectionName.restaurants)
-        .doc(restaurantId)
-        .update({
-          menuCalculated: admin.firestore.FieldValue.arrayRemove(menuItem),
-        });
-      return "success";
-    } catch (e) {
-      return `Error: ${e.toString()}`;
+      await getRestaurantPath(this._db, restaurantId).update({
+        menuCalculated: FieldValue.arrayRemove(menuItem),
+      });
+
+      return StringConstants.success;
+    } catch (error) {
+      return `Error: ${error}`;
     }
   }
 
-  // Update menu item
   async updateMenuItem(restaurantId, oldItem, newItem) {
     try {
-      const snapshot = await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfoCalculated)
-        .collection(CollectionName.restaurants)
-        .doc(restaurantId)
-        .get();
+      // Preserves the original Dart implementation: read from the default DB.
+      const snapshot = await getRestaurantPath(db, restaurantId).get();
 
-      if (!snapshot.exists || !snapshot.data()) return "Restaurant not found";
+      if (!snapshot.exists || snapshot.data() == null) {
+        return "Restaurant not found";
+      }
 
-      const menu = snapshot.data().menuCalculated || [];
+      const menu = [...(snapshot.data().menuCalculated ?? [])];
       const index = menu.indexOf(oldItem);
+
       if (index === -1) return "Item not found";
 
       menu[index] = newItem;
 
-      await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfoCalculated)
-        .collection(CollectionName.restaurants)
-        .doc(restaurantId)
-        .update({ menuCalculated: menu });
+      await getRestaurantPath(this._db, restaurantId).update({
+        menuCalculated: menu,
+      });
 
-      return "success";
-    } catch (e) {
-      return `Error: ${e.toString()}`;
+      return StringConstants.success;
+    } catch (error) {
+      return `Error: ${error}`;
     }
   }
 
-  // Utilities
   addFoodInfoStrings(a, b) {
     const partsA = a.split(",");
     const partsB = b.split(",");
 
-    const numsA = partsA.slice(1).map(Number);
-    const numsB = partsB.slice(1).map(Number);
+    const parseInteger = (value) => {
+      if (!/^[+-]?\d+$/.test(value.trim())) {
+        throw new Error(`Invalid integer: ${value}`);
+      }
+      return Number.parseInt(value, 10);
+    };
 
-    while (numsA.length < numsB.length) numsA.push(0);
-    while (numsB.length < numsA.length) numsB.push(0);
+    const numsA = partsA.slice(1).map(parseInteger);
+    const numsB = partsB.slice(1).map(parseInteger);
 
-    const summed = numsA.map((val, i) => val + numsB[i]);
+    const length = Math.max(numsA.length, numsB.length);
+
+    while (numsA.length < length) numsA.push(0);
+    while (numsB.length < length) numsB.push(0);
+
+    const summed = numsA.map((value, index) => value + numsB[index]);
+
     return `${partsA[0]},${summed.join(",")}`;
   }
 
@@ -214,6 +256,7 @@ export class FirebaseFoodInfoCalculatedMethods {
     for (const item of list) {
       if (item.includes(text)) return item;
     }
+
     return "";
   }
 }

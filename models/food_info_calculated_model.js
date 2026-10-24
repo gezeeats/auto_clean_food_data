@@ -34,13 +34,15 @@ export class FoodInfoCalculatedModel {
   }
 
   static fromMap(map) {
-    if (!map) return new FoodInfoCalculatedModel();
     return new FoodInfoCalculatedModel({
-      restaurantInfoCalculated: map.restaurantInfoCalculated || "",
-      restaurantIdentification: map.restaurantIdentification || "",
-      menuCalculated: Array.isArray(map.menuCalculated)
-        ? map.menuCalculated
-        : [""],
+      restaurantInfoCalculated:
+        map?.restaurantInfoCalculated ?? "",
+      restaurantIdentification:
+        map?.restaurantIdentification ?? "",
+      menuCalculated:
+        map?.menuCalculated != null
+          ? Array.from(map.menuCalculated)
+          : [""],
     });
   }
 
@@ -53,10 +55,6 @@ export class FoodInfoCalculatedModel {
   }
 
   toString() {
-    return `FoodInfoCalculatedModel(restaurantInfoCalculated: ${
-      this.restaurantInfoCalculated
-    }, restaurantIdentification: ${
-      this.restaurantIdentification
-    }, menuCalculated: ${JSON.stringify(this.menuCalculated)})`;
+    return `FoodInfoCalculatedModel(restaurantInfoCalculated: ${this.restaurantInfoCalculated}, restaurantIdentification: ${this.restaurantIdentification}, menuCalculated: ${JSON.stringify(this.menuCalculated)})`;
   }
 }

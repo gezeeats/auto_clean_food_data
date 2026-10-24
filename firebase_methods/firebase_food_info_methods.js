@@ -1,273 +1,291 @@
+
 import { db } from "../firebaseConfig.js";
-import admin from "firebase-admin"; // for FieldValue
+import { FieldValue } from "firebase-admin/firestore";
 import { CollectionName } from "../key_words/collection_name.js";
 import { FoodInfoModel } from "../models/food_info_model.js";
-import { format } from "date-fns";
+import { StringConstants } from "../utils/string_constant.js";
 
-// const db = admin.firestore();
-
-const getCurrentDateAndTime = () => format(new Date(), "yyyy-MM-dd HH:mm:ss");
 
 export class FirebaseFoodInfoMethods {
-  async addView(foodId, userId) {
-    const date = getCurrentDateAndTime();
+  // Add data to an array in the temporary document.
+  async _addArrayData(field, finalData) {
     try {
       await db
         .collection(CollectionName.foodInfo)
         .doc(CollectionName.foodInfoTemp)
         .update({
-          foodViewData: admin.firestore.FieldValue.arrayUnion(`${foodId},${userId},${date}`),
+          [field]: FieldValue.arrayUnion(...finalData),
         });
-      return "success";
+
+
+      return StringConstants.success;
     } catch (err) {
-      return err.message || "Some error has occurred";
+      return err.toString();
     }
   }
 
-  async addViewBackUp(viewDataList) {
-    try {
-      await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfo)
-        .update({
-          foodViewData: admin.firestore.FieldValue.arrayUnion(...viewDataList),
-        });
-      return "success";
-    } catch (err) {
-      return err.message || "Some error has occurred";
-    }
-  }
-
-  async addRestaurantView(foodId, userId) {
-    const date = getCurrentDateAndTime();
-    try {
+  // Clear an array in the temporary document.
+  async _clearArrayData(field) {
+    try {          
       await db
         .collection(CollectionName.foodInfo)
         .doc(CollectionName.foodInfoTemp)
         .update({
-          restaurantViewData: admin.firestore.FieldValue.arrayUnion(`${foodId},${userId},${date}`),
+          [field]: [""],
         });
-      return "success";
+      return StringConstants.success;
     } catch (err) {
-      return err.message || "Some error has occurred";
+      console.log(err.toString());
+      return err.toString();
     }
   }
 
-  async addRestaurantViewBackUp(resViewDataList) {
-    try {
-      await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfo)
-        .update({
-          restaurantViewData: admin.firestore.FieldValue.arrayUnion(...resViewDataList),
-        });
-      return "success";
-    } catch (err) {
-      return err.message || "Some error has occurred";
-    }
+  // Food views
+  async addFoodView(finalData) {
+    return await this._addArrayData("foodViewData", finalData);
   }
 
-  async addSale(foodId, userId, amount) {
-    const date = getCurrentDateAndTime();
-    const finalData = `${foodId},${userId},${amount},${date}`;
-    try {
-      await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfoTemp)
-        .update({
-          foodSaleData: admin.firestore.FieldValue.arrayUnion(finalData),
-        });
-      return "success";
-    } catch (err) {
-      return err.message || "Some error has occurred";
-    }
+  async addFoodViewBackUp(viewDataList) {
+    return await db
+      .collection(CollectionName.foodInfo)
+      .doc(CollectionName.foodInfo)
+      .update({
+        foodViewData: FieldValue.arrayUnion(...viewDataList),
+      })
+      .then(() => {
+
+        return StringConstants.success;
+      })
+      .catch((err) => err.toString());
+  }
+
+  async clearFoodViewData() {
+    return await this._clearArrayData("foodViewData");
+  }
+
+  // Restaurant views
+  async addResView(finalData) {
+    return await this._addArrayData("restaurantViewData", finalData);
+  }
+
+  async caddResViewBackUp(resViewDataList) {
+    return await this._addBackupArrayData(
+      "restaurantViewData",
+      resViewDataList,
+    );
+  }
+
+  async clearResViewData() {
+    return await this._clearArrayData("restaurantViewData");
+  }
+
+  // Sales
+  async addSale(finalData) {
+    return await this._addArrayData("foodSaleData", finalData);
   }
 
   async addSaleBackUp(saleDataList) {
-    try {
-      await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfo)
-        .update({
-          foodSaleData: admin.firestore.FieldValue.arrayUnion(...saleDataList),
-        });
-      return "success";
-    } catch (err) {
-      return err.message || "Some error has occurred";
-    }
+    return await this._addBackupArrayData("foodSaleData", saleDataList);
   }
 
-  async addFavorite(foodId, userId, isAdd) {
-    const date = getCurrentDateAndTime();
-    try {
-      await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfoTemp)
-        .update({
-          foodFavoriteData: admin.firestore.FieldValue.arrayUnion(
-            `${foodId},${userId},${date},${isAdd}`
-          ),
-        });
-      return "success";
-    } catch (err) {
-      return err.message || "Some error has occurred";
-    }
+  async clearSaleData() {
+    return await this._clearArrayData("foodSaleData");
   }
 
-  async addFavoriteBackUp(favDataList) {
-    try {
-      await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfo)
-        .update({
-          foodFavoriteData: admin.firestore.FieldValue.arrayUnion(...favDataList),
-        });
-      return "success";
-    } catch (err) {
-      return err.message || "Some error has occurred";
-    }
+  // Food liked
+  async addFoodLiked(finalData) {
+    return await this._addArrayData("foodLiked", finalData);
   }
 
-  async addRestaurantFavorite(foodId, userId, isAdd) {
-    const date = getCurrentDateAndTime();
-    try {
-      await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfoTemp)
-        .update({
-          restaurantFavoriteData: admin.firestore.FieldValue.arrayUnion(
-            `${foodId},${userId},${date},${isAdd}`
-          ),
-        });
-      return "success";
-    } catch (err) {
-      return err.message || "Some error has occurred";
-    }
+  async addFoodLikedBackUp(saleDataList) {
+    return await this._addBackupArrayData("foodLiked", saleDataList);
   }
 
-  async addRestaurantFavoriteBackUp(resFavDataList) {
-    try {
-      await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfo)
-        .update({
-          restaurantFavoriteData: admin.firestore.FieldValue.arrayUnion(...resFavDataList),
-        });
-      return "success";
-    } catch (err) {
-      return err.message || "Some error has occurred";
-    }
+  async clearFoodLikedData() {
+    return await this._clearArrayData("foodLiked");
   }
 
-  async addCart(foodId, userId, isAdd) {
-    const date = getCurrentDateAndTime();
-    try {
-      await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfoTemp)
-        .update({
-          foodCartData: admin.firestore.FieldValue.arrayUnion(
-            `${foodId},${userId},${date},${isAdd}`
-          ),
-        });
-      return "success";
-    } catch (err) {
-      return err.message || "Some error has occurred";
-    }
+  // Food unliked
+  async addFoodUnliked(finalData) {
+    return await this._addArrayData("foodUnliked", finalData);
+  }
+
+  async addFoodUnlikedBackUp(saleDataList) {
+    return await this._addBackupArrayData("foodUnliked", saleDataList);
+  }
+
+  async clearFoodUnlikedData() {
+    return await this._clearArrayData("foodUnliked");
+  }
+
+  // Food favorites
+  async addFoodFav(finalData) {
+    return await this._addArrayData("foodFavoriteData", finalData);
+  }
+
+  async addFoodFavBackUp(favDataList) {
+    return await this._addBackupArrayData("foodFavoriteData", favDataList);
+  }
+
+  async clearFoodFavData() {
+    return await this._clearArrayData("foodFavoriteData");
+  }
+
+  // Food unfavorites
+  async addFoodUnFav(finalData) {
+    return await this._addArrayData("foodUnFavoriteData", finalData);
+  }
+
+  async addFoodUnFavBackUp(favDataList) {
+    return await this._addBackupArrayData("foodUnFavoriteData", favDataList);
+  }
+
+  async clearFoodUnFavData() {
+    return await this._clearArrayData("foodUnFavoriteData");
+  }
+
+  // Restaurant favorites
+  async addResFav(finalData) {
+    return await this._addArrayData("restaurantFavoriteData", finalData);
+  }
+
+  async addResFavBackUp(resFavDataList) {
+    return await this._addBackupArrayData(
+      "restaurantFavoriteData",
+      resFavDataList,
+    );
+  }
+
+  async clearResFavData() {
+    return await this._clearArrayData("restaurantFavoriteData");
+  }
+
+  // Restaurant unfavorites
+  async addResUnFav(finalData) {
+    return await this._addArrayData("restaurantUnFavoriteData", finalData);
+  }
+
+  async addResUnFavBackUp(resFavDataList) {
+    return await this._addBackupArrayData(
+      "restaurantUnFavoriteData",
+      resFavDataList,
+    );
+  }
+
+  async clearResUnFavData() {
+    return await this._clearArrayData("restaurantUnFavoriteData");
+  }
+
+  // Cart
+  async addCart(finalData) {
+    return await this._addArrayData("foodCartData", finalData);
   }
 
   async addCartBackUp(cartDataList) {
+    return await this._addBackupArrayData("foodCartData", cartDataList);
+  }
+
+  async clearCartData() {
+    return await this._clearArrayData("foodCartData");
+  }
+
+  // Uncart
+  async addUnCart(finalData) {
+    return await this._addArrayData("foodUnCartData", finalData);
+  }
+
+  async addUnCartBackUp(cartDataList) {
+    return await this._addBackupArrayData("foodUnCartData", cartDataList);
+  }
+
+  async clearUnCartData() {
+    return await this._clearArrayData("foodUnCartData");
+  }
+
+  // Add data to the main document.
+  async _addBackupArrayData(field, data) {
     try {
       await db
         .collection(CollectionName.foodInfo)
         .doc(CollectionName.foodInfo)
         .update({
-          foodCartData: admin.firestore.FieldValue.arrayUnion(...cartDataList),
+          [field]: FieldValue.arrayUnion(...data),
         });
-      return "success";
+
+
+      return StringConstants.success;
     } catch (err) {
-      return err.message || "Some error has occurred";
+      return err.toString();
     }
   }
 
+  // Read main document
   async getFoodInfoDetail() {
     try {
       const snap = await db
         .collection(CollectionName.foodInfo)
         .doc(CollectionName.foodInfo)
         .get();
-      const data = snap.data();
-      return new FoodInfoModel(data);
+
+
+      return snap.exists
+        ? FoodInfoModel.fromMap(snap.data())
+        : new FoodInfoModel();
     } catch (err) {
+      console.error("getFoodInfoDetail error:", err.message ?? String(err));
       return new FoodInfoModel();
     }
   }
 
+  // Read temporary document
   async getFoodInfoTempDetail() {
     try {
       const snap = await db
         .collection(CollectionName.foodInfo)
         .doc(CollectionName.foodInfoTemp)
         .get();
-      const data = snap.data();
-      return new FoodInfoModel(data);
+
+   
+
+      return snap.exists
+        ? FoodInfoModel.fromMap(snap.data())
+        : new FoodInfoModel();
     } catch (err) {
+      console.error(
+        "getFoodInfoTempDetail error:",
+        err.message ?? String(err),
+      );
       return new FoodInfoModel();
     }
   }
 
+  // Create temporary document
   async createFoodInfo(foodInfoData) {
     try {
       await db
         .collection(CollectionName.foodInfo)
         .doc(CollectionName.foodInfoTemp)
         .set(foodInfoData.toMap());
-      return "success";
+
+      
+      return StringConstants.success;
     } catch (err) {
-      return err.message || "Some error has occurred";
-    }
-  }
-  async createFoodInfo(foodInfoData) {
-    try {
-      await db
-        .collection(CollectionName.foodInfo)
-        .doc(CollectionName.foodInfoTemp)
-        .set(foodInfoData.toMap());
-      return "success";
-    } catch (err) {
-      return err.message || "Some error has occurred";
+      return err.toString();
     }
   }
 
+  // Create main document
   async createFoodInfoBackUp(foodInfoData) {
     try {
       await db
         .collection(CollectionName.foodInfo)
         .doc(CollectionName.foodInfo)
         .set(foodInfoData.toMap());
-      return "success";
+
+    
+      return StringConstants.success;
     } catch (err) {
-      return err.message || "Some error has occurred";
+      return err.toString();
     }
   }
-
-  async clearField(docName, field) {
-    try {
-      await db
-        .collection(CollectionName.foodInfo)
-        .doc(docName)
-        .update({ [field]: [""] });
-      return "success";
-    } catch (err) {
-      return err.message || "Some error has occurred";
-    }
-  }
-
-  // Specific Clear Methods
-  clearFoodViewData() { return this.clearField(CollectionName.foodInfoTemp, "foodViewData"); }
-  clearResViewData() { return this.clearField(CollectionName.foodInfoTemp, "restaurantViewData"); }
-  clearSaleData() { return this.clearField(CollectionName.foodInfoTemp, "foodSaleData"); }
-  clearFoodFavData() { return this.clearField(CollectionName.foodInfoTemp, "foodFavoriteData"); }
-  clearResFavData() { return this.clearField(CollectionName.foodInfoTemp, "restaurantFavoriteData"); }
-  clearCartData() { return this.clearField(CollectionName.foodInfoTemp, "foodCartData"); }
 }

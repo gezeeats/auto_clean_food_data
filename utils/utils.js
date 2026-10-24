@@ -190,3 +190,21 @@ export function searchItemForSpecificRestaurant(searchWords, foodIds) {
     return foodIds.includes(foodId);
   });
 }
+export function cleanNaNValues(info) {
+  const parts = info.split(",");
+
+  for (let i = 1; i < parts.length; i++) {
+    const num = Number(parts[i]);
+
+    if (parts[i].trim() === "" || !Number.isFinite(num)) {
+      parts[i] = "0";
+    }
+  }
+
+  return parts.join(",");
+}
+
+
+export function isListEmpty(list) {
+  return list.length === 0 || (list.length === 1 && list[0] === "");
+}

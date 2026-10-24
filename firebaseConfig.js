@@ -1,6 +1,6 @@
 import admin from "firebase-admin";
 // import serviceAccount from "./gezeeats-firebase-adminsdk-8o1wv-d1cc221d22.json" assert { type: "json" };
-import serviceAccount from "./gezeeats-firebase-adminsdk-8o1wv-d1cc221d22.json" with { type: "json" };
+import serviceAccount from "./gezeeats-firebase-adminsdk-8o1wv-73f5fc5d3f.json" with { type: "json" };
 
 // Initialize Firebase Admin SDK
 admin.initializeApp({
