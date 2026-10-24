@@ -1,10 +1,10 @@
+
 name: Auto Clean Firebase Data
 
 on:
   schedule:
-    # - cron: "*/10 * * * *"  # runs every 10 minutes
-    - cron: "0 */3 * * *"  # runs every 3 hours
-  workflow_dispatch:  # allow manual trigger
+    - cron: "0 */3 * * *"
+  workflow_dispatch:
 
 jobs:
   clean:
@@ -12,21 +12,37 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: "22"
+
+      - name: Check Node.js and npm
+        run: |
+          node --version
+          npm --version
+          pwd
+          ls -la
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Write Firebase credentials from secret
-        run: |
-          echo "$FIREBASE_SERVICE_ACCOUNT" > gezeeats-firebase-adminsdk-8o1wv-d1cc221d22.json
+        shell: bash
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::error::FIREBASE_SERVICE_ACCOUNT secret is empty or missing."
+            exit 1
+          fi
+
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" \
+            > gezeeats-firebase-adminsdk-8o1wv-d1cc221d22.json
+
+          node -e "JSON.parse(require('fs').readFileSync('gezeeats-firebase-adminsdk-8o1wv-d1cc221d22.json', 'utf8')); console.log('Firebase credentials JSON is valid.')"
 
       - name: Run Cleaner
         run: node clean_all.js
