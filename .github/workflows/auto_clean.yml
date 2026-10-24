@@ -1,11 +1,12 @@
-
 name: Auto Clean Firebase Data
 
 on:
   schedule:
-    # - cron: "0 */3 * * *"  # runs every 3 hours
-    - cron: "*/6 * * * *"
-  workflow_dispatch:  # allow manual trigger
+    - cron: "7-59/6 * * * *"
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   clean:
