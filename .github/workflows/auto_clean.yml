@@ -2,7 +2,7 @@ name: Auto Clean Firebase Data
 
 on:
   schedule:
-    - cron: "7-59/6 * * * *"
+    - cron: "0 */4 * * *"
   workflow_dispatch:
   push:
     branches:
